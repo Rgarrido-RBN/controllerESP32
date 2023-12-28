@@ -16,8 +16,11 @@ extern "C"
 
 static uint8_t mPintIdCounter{0};
 
-Button::Button(std::shared_ptr<gpioESP32> pin, uint8_t mode) : mMode(mode), mPin(pin), mButtonId(mPintIdCounter++)
+Button::Button(std::shared_ptr<gpioESP32> pin, uint8_t mode)
 {
+    mMode = mode;
+    mPin = pin;
+    mButtonId = mPintIdCounter++;
 }
 
 bool Button::getValue()

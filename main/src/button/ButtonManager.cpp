@@ -8,6 +8,9 @@
  */
 
 #include "button/ButtonManager.h"
+#include "esp_log.h"
+
+const char TAG[] = "ButtonManager";
 
 extern "C"
 {
@@ -26,7 +29,7 @@ void checkButtons(void *pvParameters); // Main task
 ButtonManager::ButtonManager()
 {
     // create the task
-    xTaskCreate(checkButtons, "checkButtons task", 2 * 1024, NULL, configMAX_PRIORITIES - 3, this);
+    xTaskCreate(checkButtons, "checkButtons task", 2 * 1024, this, configMAX_PRIORITIES - 3, NULL);
 
     // Init Mutex
     mButtonArraySem = xSemaphoreCreateBinary();
