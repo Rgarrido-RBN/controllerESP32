@@ -1,0 +1,7 @@
+﻿---
+BasedOnStyle: Microsoft
+PointerAlignment: Right
+SpaceAfterCStyleCast: 'false'
+SpaceBeforeParens: Never
+
+...
