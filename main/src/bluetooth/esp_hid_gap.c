@@ -11,7 +11,7 @@
 #include "freertos/semphr.h"
 #include "freertos/task.h"
 
-#include "esp_hid_gap.h"
+#include "bluetooth/esp_hid_gap.h"
 
 static const char *TAG = "ESP_HID_GAP";
 
