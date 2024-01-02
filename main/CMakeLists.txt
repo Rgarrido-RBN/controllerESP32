@@ -6,6 +6,7 @@ set(src_dir "./"
             "src/"
             "src/gpio/"
             "src/button/"
+            "src/bluetooth/"
    )
 
 idf_component_register(
