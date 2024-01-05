@@ -16,13 +16,13 @@ static const char *TAG = "gpioDefinition";
 const int ENABLE = 1;
 const int DISABLE = 0;
 
-xQueueHandle gpioInterruptQueue = NULL;
+QueueHandle_t gpioInterruptQueue = NULL;
 SemaphoreHandle_t mMutex;
 
 int gpioInterruptModesLookUpTable[] = {
 
-    GPIO_PIN_INTR_DISABLE, GPIO_PIN_INTR_POSEDGE, GPIO_PIN_INTR_NEGEDGE,
-    GPIO_PIN_INTR_ANYEDGE, GPIO_PIN_INTR_LOLEVEL, GPIO_PIN_INTR_HILEVEL};
+    GPIO_INTR_DISABLE, GPIO_INTR_POSEDGE,   GPIO_INTR_NEGEDGE,
+    GPIO_INTR_ANYEDGE, GPIO_INTR_LOW_LEVEL, GPIO_INTR_HIGH_LEVEL};
 
 int gpioModesLookUpTable[] = {
 
@@ -79,4 +79,3 @@ void createGpioInterruptQueue()
     mMutex = xSemaphoreCreateBinary();
     gpioInterruptQueue = xQueueCreate(10, sizeof(uint32_t));
 }
-

@@ -8,19 +8,19 @@
  */
 
 #include "button/ButtonManager.h"
-#include "esp_log.h"
 
 const char TAG[] = "ButtonManager";
 
 extern "C"
 {
+#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
     // Semaphore for avoinding race conditions on Button array
 }
-xSemaphoreHandle mButtonArraySem;
-xQueueHandle mButtonEventQueue;
+SemaphoreHandle_t mButtonArraySem;
+QueueHandle_t mButtonEventQueue;
 
 static bool mRunning{false};
 static std::shared_ptr<Button> mButton[MAX_BUTTON_ALLOWED] = {0};

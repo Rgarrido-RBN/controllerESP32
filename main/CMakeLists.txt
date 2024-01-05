@@ -16,4 +16,5 @@ idf_component_register(
 
                        REQUIRES     esp_hid
                                     driver
+                                    nvs_flash
                       )

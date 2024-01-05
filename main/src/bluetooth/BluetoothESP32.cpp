@@ -18,7 +18,7 @@ extern "C"
 #include "freertos/queue.h"
 #include "freertos/task.h"
 #include <cstring>
-    extern xQueueHandle mButtonEventQueue;
+    extern QueueHandle_t mButtonEventQueue;
     static void ble_hidd_event_callback(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
 }
 
@@ -31,40 +31,11 @@ extern "C"
 
 static const char *TAG = "HID_DEV_BLE";
 
-const unsigned char buttonBoxReportMap[] = {
-    0x05, 0x01, // Usage Page (Generic Desktop Controls)
-    0x09, 0x05, // Usage (Gamepad)
-    0xA1, 0x01, // Collection (Application)
-    0x85, 0x01, // Report ID (1)
-    0x09, 0x01, // Usage (Button 1)
-    0x09, 0x02, // Usage (Button 2)
-    0x09, 0x39, // Usage (Hat Switch)
-    0x15, 0x01, // Logical Minimum (0)
-    0x25, 0x08, // Logical Maximum (8)
-    0x35, 0x00, // Physical Minimum (0)
-    0x45, 0x08, // Physical Maximum (8)
-    0x95, 0x01, // Report Count (1)
-    0x75, 0x08, // Report Size (8)
-    0x81, 0x02, // Input (Data, Variable, Absolute)
-    0xC0,       // End Collection
-};
-
-static esp_hid_raw_report_map_t ble_report_maps[] = {{.data = buttonBoxReportMap, .len = sizeof(buttonBoxReportMap)}};
-
-static esp_hid_device_config_t ble_hid_config = {.vendor_id = 0x16C0,
-                                                 .product_id = 0x05DF,
-                                                 .version = 0x0100,
-                                                 .device_name = "Prudi button box",
-                                                 .manufacturer_name = "RBN SIM",
-                                                 .serial_number = "1234567890",
-                                                 .report_maps = ble_report_maps,
-                                                 .report_maps_len = 1};
-
 void buttonBoxBluetoothTask(void *pvParameters);
 
 typedef struct
 {
-    xTaskHandle task_hdl;
+    TaskHandle_t task_hdl;
     esp_hidd_dev_t *hid_dev;
     uint8_t protocol_mode;
     uint8_t *buffer;
@@ -73,6 +44,7 @@ typedef struct
 static local_param_t s_ble_hid_param = {0};
 
 static bool mRunning;
+static bool mConnected{false};
 
 static void ble_hidd_event_callback(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
 {
@@ -88,6 +60,7 @@ static void ble_hidd_event_callback(void *handler_args, esp_event_base_t base, i
     }
     case ESP_HIDD_CONNECT_EVENT: {
         ESP_LOGI(TAG, "CONNECT");
+        mConnected = true;
         break;
     }
     case ESP_HIDD_PROTOCOL_MODE_EVENT: {
@@ -116,6 +89,7 @@ static void ble_hidd_event_callback(void *handler_args, esp_event_base_t base, i
             TAG, "DISCONNECT: %s",
             esp_hid_disconnect_reason_str(esp_hidd_dev_transport_get(param->disconnect.dev), param->disconnect.reason));
         esp_hid_ble_gap_adv_start();
+        mConnected = false;
         break;
     }
     case ESP_HIDD_STOP_EVENT: {
@@ -151,7 +125,7 @@ int8_t BluetoothESP32::init()
     }
     ESP_LOGI(TAG, "setting ble device");
     ESP_ERROR_CHECK(
-        esp_hidd_dev_init(&ble_hid_config, ESP_HID_TRANSPORT_BLE, ble_hidd_event_callback, &s_ble_hid_param.hid_dev));
+        esp_hidd_dev_init(mConfig, ESP_HID_TRANSPORT_BLE, ble_hidd_event_callback, &s_ble_hid_param.hid_dev));
     mRunning = true;
     return 0;
 }
@@ -169,11 +143,11 @@ void buttonBoxBluetoothTask(void *pvParameters)
     {
         while(mRunning)
         {
-            if(mButtonEventQueue != NULL)
+            if(mButtonEventQueue != NULL && mConnected)
             {
                 if(xQueueReceive(mButtonEventQueue, &buttonID, portMAX_DELAY))
                 {
-                    HID_CC_RPT_SET_BUTTON(bufferToSend, 1);
+                    HID_CC_RPT_SET_BUTTON(bufferToSend, buttonID);
                     esp_hidd_dev_input_set(s_ble_hid_param.hid_dev, 1, HID_RPT_ID_CC_IN, bufferToSend,
                                            HID_CC_IN_RPT_LEN);
                     memset(bufferToSend, 0, sizeof(bufferToSend));

@@ -42,27 +42,21 @@ extern "C"
 static const char *TAG = "HID_DEV_DEMO";
 
 const unsigned char buttonBoxReportMap[] = {
-    0x05, 0x0C, // Usage Page (Consumer)
-    0x09, 0x01, // Usage (Consumer Control)
+    0x05, 0x01, // Usage Page (Generic Desktop Controls)
+    0x09, 0x05, // Usage (Gamepad)
     0xA1, 0x01, // Collection (Application)
-
     0x85, 0x01, // Report ID (1)
-    0x15, 0x00, // Logical Minimum (0)
-    0x29, 0x05, // Logical Maximum (5)
-    0x09, 0x01, // Usage code for button 1/A
-    0x75, 0x01, // Report Size (1 byte for button press)
-    0x95, 0x06, // Report Count (6 buttons)
-    0x81, 0x00, // Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
-
-    0x09, 0x31, // Usage code for toggle switch 1
-    0x15, 0x00, // Logical Minimum (0 for off)
-    0x25, 0x01, // Logical Maximum (1 for on)
-    0x75, 0x01, // Report Size (1 byte for toggle switch state)
-    0x95, 0x04, // Report Count (4 toggle switches)
-    0x81, 0x02, // Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-
-    0xC0, // End Collection
-    0xC0, // End Collection
+    0x09, 0x01, // Usage (Button 1)
+    0x09, 0x02, // Usage (Button 2)
+    0x09, 0x39, // Usage (Hat Switch)
+    0x15, 0x01, // Logical Minimum (0)
+    0x25, 0x08, // Logical Maximum (8)
+    0x35, 0x00, // Physical Minimum (0)
+    0x45, 0x08, // Physical Maximum (8)
+    0x95, 0x01, // Report Count (1)
+    0x75, 0x08, // Report Size (8)
+    0x81, 0x02, // Input (Data, Variable, Absolute)
+    0xC0,       // End Collection
 };
 
 static esp_hid_raw_report_map_t ble_report_maps[] = {{.data = buttonBoxReportMap, .len = sizeof(buttonBoxReportMap)}};
@@ -93,17 +87,11 @@ void app_main(void)
 
     auto buttonPresetDownPin =
         std::make_shared<gpioESP32>(BUTTON_PRESET_DOWN_PIN, PAL_GPIO_INTR_POSEDGE, PAL_GPIO_MODE_INPUT, PULLDOWN_MODE);
-    ESP_LOGI("MAINNNNN", "DESPUES DEL GPIO");
     auto buttonTest = std::make_shared<Button>(buttonPresetDownPin, 1); // MODE 1
-    ESP_LOGI("MAINNNNN", "DESPUES DEL Button");
     auto buttonMan = std::make_shared<ButtonManager>();
-    ESP_LOGI("MAINNNNN", "DESPUES DEL Manager");
     buttonMan->registerNewButton(buttonTest);
-    ESP_LOGI("MAINNNNN", "DESPUES DEL register");
 
     auto bluetooth = std::make_shared<BluetoothESP32>(&ble_hid_config);
-    ESP_LOGI("MAINNNNN", "DESPUES DEL bluetooth");
 
     bluetooth->init();
-    ESP_LOGI("MAINNNNN", "DESPUES DEL init");
 }
